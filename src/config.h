@@ -14,21 +14,16 @@
 // indicator spends on and off. Given in units of LOOP_DELAY.
 #define INDICATOR_HALF_PERIOD 20
 
-// Duty cycle of the whole device. Given in units of LOOP_DELAY
-// 600 = 1 minute
-#define ENABLE_ON_PERIOD 2 * 600
-#define ENABLE_OFF_PERIOD 10 * 600
-
 // Speeds and accelerations of motors, in range 0 .. 255 where 255 is the
 // maximum.
-#define SPOOL_SPEED 0x40
-#define SPOOL_ACCELERATION 0x40
-#define GUIDE_SPEED 0x80
-#define GUIDE_ACCELERATION 0x80
+#define SPOOL_SPEED 0x60
+#define SPOOL_ACCELERATION 0x80
+#define GUIDE_SPEED 0x60
+#define GUIDE_ACCELERATION 0x50
 
 // Duty cycle of guide running motor 2. Given in units of LOOP_DELAY
-#define GUIDE_ON_PERIOD 10
-#define GUIDE_OFF_PERIOD 30
+#define GUIDE_ON_PERIOD 35
+#define GUIDE_OFF_PERIOD 210
 
 // Definition of indicator pin data direction and data ports and pins
 #define INDICATOR_DATA_DIR DDRB
@@ -60,3 +55,15 @@
 #define MOTOR_2_REVERSE_DATA PORTD
 #define MOTOR_2_REVERSE_DATA_PIN PORTD3
 #define MOTOR_2_REVERSE_OUTPUT_COMPARE OCR2B
+
+#define MOTOR_3_FORWARD_DATA_DIR DDRD
+#define MOTOR_3_FORWARD_DATA_DIR_PIN DDD6
+#define MOTOR_3_FORWARD_DATA PORTD
+#define MOTOR_3_FORWARD_DATA_PIN PORTD6
+#define MOTOR_3_FORWARD_OUTPUT_COMPARE OCR0A
+
+#define MOTOR_3_REVERSE_DATA_DIR DDRD
+#define MOTOR_3_REVERSE_DATA_DIR_PIN DDD5
+#define MOTOR_3_REVERSE_DATA PORTD
+#define MOTOR_3_REVERSE_DATA_PIN PORTD5
+#define MOTOR_3_REVERSE_OUTPUT_COMPARE OCR0B

@@ -34,16 +34,16 @@ void toggleIndicator() {
 /// Motor 1 is always running, motor 2 is also initially running
 void initializeMotors() {
     // Set running forwards
-    MOTOR_1_FORWARD_OUTPUT_COMPARE = SPOOL_SPEED;
-    MOTOR_1_REVERSE_OUTPUT_COMPARE = 0x00;
+    MOTOR_3_FORWARD_OUTPUT_COMPARE = SPOOL_SPEED;
+    MOTOR_3_REVERSE_OUTPUT_COMPARE = 0x00;
 
     MOTOR_2_FORWARD_OUTPUT_COMPARE = GUIDE_SPEED;
     MOTOR_2_REVERSE_OUTPUT_COMPARE = 0x00;
 
     // Enable all outputs
-    MOTOR_1_FORWARD_DATA |= BV(MOTOR_1_FORWARD_DATA_PIN);
+    MOTOR_3_FORWARD_DATA |= BV(MOTOR_3_FORWARD_DATA_PIN);
     MOTOR_2_FORWARD_DATA |= BV(MOTOR_2_FORWARD_DATA_PIN);
-    MOTOR_1_REVERSE_DATA |= BV(MOTOR_1_REVERSE_DATA_PIN);
+    MOTOR_3_REVERSE_DATA |= BV(MOTOR_3_REVERSE_DATA_PIN);
     MOTOR_2_REVERSE_DATA |= BV(MOTOR_2_REVERSE_DATA_PIN);
 }
 
@@ -74,21 +74,21 @@ int16_t acceleration(uint8_t current, uint8_t target, uint8_t maxAcceleration) {
 ///
 /// \param acceleration
 ///    Desired acceleration
-void updateMotor1Speed(
+void updateMotor3Speed(
     uint8_t forwardTarget,
     uint8_t reverseTarget,
     uint8_t acceleration
 ) {
-    if (!MOTOR_1_REVERSE_OUTPUT_COMPARE) {
-        MOTOR_1_FORWARD_OUTPUT_COMPARE += ::acceleration(
-            MOTOR_1_FORWARD_OUTPUT_COMPARE,
+    if (!MOTOR_3_REVERSE_OUTPUT_COMPARE) {
+        MOTOR_3_FORWARD_OUTPUT_COMPARE += ::acceleration(
+            MOTOR_3_FORWARD_OUTPUT_COMPARE,
             forwardTarget,
             acceleration
         );
     }
-    if (!MOTOR_1_FORWARD_OUTPUT_COMPARE) {
-        MOTOR_1_REVERSE_OUTPUT_COMPARE += ::acceleration(
-            MOTOR_1_REVERSE_OUTPUT_COMPARE,
+    if (!MOTOR_3_FORWARD_OUTPUT_COMPARE) {
+        MOTOR_3_REVERSE_OUTPUT_COMPARE += ::acceleration(
+            MOTOR_3_REVERSE_OUTPUT_COMPARE,
             reverseTarget,
             acceleration
         );
@@ -124,13 +124,10 @@ void updateMotor2Speed(
 
 /// \brief
 ///    Sets spool motor (1) rotation according to enable input value.
-///
-/// \param enable
-///    If output is enabled
-void controlSpool(bool enable) {
-    uint8_t forwardTarget = enable ? GUIDE_SPEED : 0x00;
+void controlSpool() {
+    uint8_t forwardTarget = SPOOL_SPEED;
 
-    updateMotor1Speed(forwardTarget, 0x00, GUIDE_ACCELERATION);
+    updateMotor3Speed(forwardTarget, 0x00, SPOOL_ACCELERATION);
 }
 
 /// \brief
@@ -140,10 +137,7 @@ void controlSpool(bool enable) {
 /// The duty cycle implemented within this function is running continuously. The
 /// motor is stopped if it is either off phase of the cycle, of enable input is
 /// not set.
-///
-/// \param enable
-///    If output is enabled
-void controlGuide(bool enable) {
+void controlGuide() {
     static uint8_t forwardTarget = GUIDE_SPEED;
     static uint16_t counter = 0;
 
@@ -151,7 +145,6 @@ void controlGuide(bool enable) {
 
     if (counter == GUIDE_ON_PERIOD) {
         forwardTarget = 0x00;
-        counter++;
     }
     else if (counter == GUIDE_ON_PERIOD + GUIDE_OFF_PERIOD) {
         // Start to run immediately
@@ -160,15 +153,14 @@ void controlGuide(bool enable) {
         counter = 0;
     }
 
-    uint8_t adjustedTarget = enable ? GUIDE_SPEED : 0x00;
-    updateMotor2Speed(adjustedTarget, 0x00, GUIDE_ACCELERATION);
+    updateMotor2Speed(forwardTarget, 0x00, GUIDE_ACCELERATION);
 }
 
 int main() {
     INDICATOR_DATA_DIR |= BV(INDICATOR_DATA_DIR_PIN);
 
-    MOTOR_1_FORWARD_DATA_DIR |= BV(MOTOR_1_FORWARD_DATA_DIR_PIN);
-    MOTOR_1_REVERSE_DATA_DIR |= BV(MOTOR_1_REVERSE_DATA_DIR_PIN);
+    MOTOR_3_FORWARD_DATA_DIR |= BV(MOTOR_3_FORWARD_DATA_DIR_PIN);
+    MOTOR_3_REVERSE_DATA_DIR |= BV(MOTOR_3_REVERSE_DATA_DIR_PIN);
     MOTOR_2_FORWARD_DATA_DIR |= BV(MOTOR_2_FORWARD_DATA_DIR_PIN);
     MOTOR_2_REVERSE_DATA_DIR |= BV(MOTOR_2_REVERSE_DATA_DIR_PIN);
 
@@ -204,26 +196,14 @@ int main() {
     while (true) {
         if (indicatorCounter == INDICATOR_HALF_PERIOD) {
             toggleIndicator();
-            indicatorCounter == 0;
+            indicatorCounter = 0;
         }
         else {
             indicatorCounter++;
         }
 
-        bool enable = false;
-        if (enableCounter < ENABLE_ON_PERIOD) {
-            enable = true;
-            enableCounter++;
-        }
-        else if (enableCounter == ENABLE_ON_PERIOD + ENABLE_OFF_PERIOD) {
-            enableCounter = 0;
-        }
-        else {
-            enableCounter++;
-        }
-
-        controlSpool(enable);
-        controlGuide(enable);
+        controlSpool();
+        controlGuide();
 
         _delay_ms(LOOP_DELAY);
     }
