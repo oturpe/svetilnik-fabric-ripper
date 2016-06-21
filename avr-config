@@ -1,0 +1,5 @@
+projectName=fabric-ripper
+sourceDir=src
+targetDir=target
+mcu=atmega88p
+programmer=arduinoisp

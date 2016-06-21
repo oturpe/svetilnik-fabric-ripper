@@ -1,0 +1,5 @@
+# Compiled source location
+target/
+
+# Symbolically linked hardware, not stored in this repository
+hardware
